@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>History Lens | Founding Mothers Edition</title>
+  <style>
+:root {
+  --bg: #f6f2ea;
+  --surface: #fffdf8;
+  --ink: #24302f;
+  --muted: #64706c;
+  --line: #ded6c8;
+  --accent: #315f63;
+  --accent-2: #8c6f4f;
+  --danger: #9b3d35;
+  --tag: #e9efe9;
+  --shadow: 0 12px 28px rgba(36, 48, 47, 0.10);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  background: radial-gradient(circle at top left, #fffaf1, var(--bg));
+  color: var(--ink);
+}
+button, input, textarea, select { font: inherit; }
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.25rem clamp(1rem, 4vw, 3rem);
+  border-bottom: 1px solid var(--line);
+  background: rgba(255,253,248,0.88);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+.eyebrow { margin: 0 0 .2rem; text-transform: uppercase; letter-spacing: .12em; color: var(--accent-2); font-size: .8rem; }
+h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.7rem); line-height: .9; }
+.subtitle { margin: .25rem 0 0; color: var(--muted); }
+.app-shell { max-width: 1120px; margin: 0 auto; padding: 1rem; }
+.tab-bar { display: flex; gap: .5rem; overflow-x: auto; padding: .5rem 0 1rem; }
+.tab, .primary-btn, .secondary-btn, .danger-btn, .file-label {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: .8rem 1rem;
+  min-height: 48px;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--ink);
+  white-space: nowrap;
+}
+.tab.active, .primary-btn { background: var(--accent); color: white; border-color: var(--accent); }
+.secondary-btn:hover, .tab:hover, .file-label:hover { border-color: var(--accent); }
+.danger-btn { color: var(--danger); }
+.view { display: none; }
+.active-view { display: block; }
+.hero-card, .card, .stat-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  box-shadow: var(--shadow);
+}
+.hero-card { padding: clamp(1.25rem, 4vw, 2.5rem); }
+.hero-card h2 { font-size: clamp(1.8rem, 4vw, 3rem); margin: 0 0 .8rem; }
+.helper, .hero-card p, .card p { color: var(--muted); line-height: 1.55; }
+.hero-actions, .form-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 1rem 0; }
+.stat-card { padding: 1.2rem; text-align: center; }
+.stat-card span { font-size: 2rem; font-weight: bold; color: var(--accent); }
+.stat-card p { margin: .25rem 0 0; }
+.card { padding: clamp(1rem, 3vw, 2rem); margin-bottom: 1rem; }
+.two-col { display: grid; grid-template-columns: 1.3fr .7fr; gap: 1rem; align-items: center; }
+.stacked-actions { display: flex; flex-direction: column; gap: .75rem; }
+.file-label input { display: none; }
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+label { display: flex; flex-direction: column; gap: .35rem; margin: .8rem 0; font-weight: bold; }
+input, textarea, select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: .85rem;
+  background: #fff;
+  color: var(--ink);
+}
+textarea { min-height: 100px; resize: vertical; }
+.tag-grid { display: flex; flex-wrap: wrap; gap: .55rem; }
+.tag-pill {
+  border: 1px solid var(--line);
+  background: var(--tag);
+  padding: .65rem .85rem;
+  border-radius: 999px;
+  min-height: 44px;
+}
+.tag-pill.selected { background: var(--accent); border-color: var(--accent); color: white; }
+
+.tag-pill { position: relative; }
+.tag-pill::after {
+  content: attr(data-definition);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%);
+  width: min(260px, 75vw);
+  background: var(--ink);
+  color: #fff;
+  padding: .7rem .8rem;
+  border-radius: 14px;
+  font-size: .86rem;
+  line-height: 1.35;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+  z-index: 30;
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+  white-space: normal;
+  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+  font-weight: 500;
+}
+.tag-pill:hover::after, .tag-pill:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-2px);
+}
+.advanced-toggle { margin: 1rem 0; }
+.advanced-panel {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: #fbf4e6;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+.status-options { display: grid; gap: .75rem; }
+.status-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: .75rem;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  padding: .9rem;
+  margin: 0;
+  font-weight: normal;
+}
+.status-card input { width: auto; margin-top: .15rem; }
+.status-card strong { color: var(--accent); display: block; margin-bottom: .2rem; }
+.status-card em { color: var(--muted); font-weight: 600; line-height: 1.35; }
+.revision-reasons { margin-top: 1rem; }
+.small-note { color: var(--muted); font-size: .95rem; line-height: 1.45; }
+
+.nudge-box { margin-top: 1rem; padding: 1rem; border-left: 5px solid var(--accent-2); background: #fbf6ec; border-radius: 16px; }
+.hidden { display: none; }
+.output-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.output-card { border: 1px solid var(--line); border-radius: 20px; padding: 1rem; background: #fff; }
+.output-card h3 { margin-top: 0; }
+.chip-list { display: flex; gap: .4rem; flex-wrap: wrap; }
+.chip { background: var(--tag); border: 1px solid var(--line); padding: .35rem .6rem; border-radius: 999px; font-size: .92rem; }
+.observation-card { border-bottom: 1px solid var(--line); padding: 1rem 0; }
+.observation-card:last-child { border-bottom: 0; }
+.meta { color: var(--muted); font-size: .95rem; }
+.graph-canvas { min-height: 520px; position: relative; border: 1px dashed var(--line); border-radius: 24px; overflow: hidden; background: linear-gradient(135deg, #fff, #f8f5ed); }
+.node { position: absolute; padding: .55rem .75rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; box-shadow: 0 6px 16px rgba(36,48,47,.08); max-width: 190px; }
+.node.person { border-color: var(--accent); }
+.node.theme { border-color: var(--accent-2); }
+.node.lens { border-color: #7f8f75; }
+.timeline-item { border-left: 4px solid var(--accent); padding: 0 0 1.25rem 1rem; margin-left: .5rem; }
+.timeline-item h3 { margin: 0 0 .5rem; }
+.footer { text-align: center; color: var(--muted); padding: 2rem; }
+@media (max-width: 780px) {
+  .stats-grid, .form-grid, .output-grid, .two-col { grid-template-columns: 1fr; }
+  .app-header { align-items: flex-start; flex-direction: column; }
+}
+@media print {
+  .app-header, .tab-bar, .footer, .hero-actions, .stacked-actions, .form-actions { display: none !important; }
+  body { background: white; }
+  .view { display: none !important; }
+  .active-view { display: block !important; }
+  .card { box-shadow: none; border: 0; }
+}
+
+</style>
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">Honors U.S. History</p>
+      <h1>History Lens</h1>
+      <p class="subtitle">Founding Mothers Edition</p>
+    </div>
+    <button id="exportPdfBtn" class="secondary-btn">Print / Save PDF</button>
+  </header>
+
+  <main class="app-shell">
+    <nav class="tab-bar" aria-label="Main navigation">
+      <button class="tab active" data-tab="home">Home</button>
+      <button class="tab" data-tab="observe">Add Observation</button>
+      <button class="tab" data-tab="graph">Knowledge Graph</button>
+      <button class="tab" data-tab="discussion">Discussion Prep</button>
+      <button class="tab" data-tab="growth">Growth Timeline</button>
+      <button class="tab" data-tab="portfolio">Portfolio</button>
+    </nav>
+
+    <section id="home" class="view active-view">
+      <div class="hero-card">
+        <h2>Build a historical thinking portfolio.</h2>
+        <p>Track people, themes, evidence, and changing interpretations as you read <em>Founding Mothers</em>.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-goto="observe">+ Add Observation</button>
+          <button class="secondary-btn" data-goto="discussion">Prepare for Discussion</button>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <article class="stat-card"><span id="statObservations">0</span><p>Observations</p></article>
+        <article class="stat-card"><span id="statPeople">0</span><p>People Tracked</p></article>
+        <article class="stat-card"><span id="statThemes">0</span><p>Themes Noticed</p></article>
+        <article class="stat-card"><span id="statLenses">0</span><p>Thinking Lenses</p></article>
+      </div>
+      <div class="card two-col">
+        <div>
+          <h3>Privacy-first workflow</h3>
+          <p>This app stores work only in this browser on this device. No accounts, no sign-in, no cloud database.</p>
+        </div>
+        <div class="stacked-actions">
+          <button id="exportJsonBtn" class="secondary-btn">Export Backup File</button>
+          <label class="file-label">Import Backup File<input id="importJsonInput" type="file" accept="application/json" /></label>
+          <button id="clearBtn" class="danger-btn">Clear Local Portfolio</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="observe" class="view">
+      <div class="card">
+        <h2>Add Observation</h2>
+        <p class="helper">Keep it quick: notice, tag, save. The goal is not a perfect paragraph — it’s a useful thought.</p>
+        <form id="observationForm">
+          <div class="form-grid">
+            <label>Reading section
+              <input id="readingSection" type="text" placeholder="Example: Chapters 3–4" required />
+            </label>
+            <label>Person / figure
+              <input id="person" list="peopleList" placeholder="Abigail Adams" required />
+              <datalist id="peopleList"></datalist>
+            </label>
+            <label>Page / evidence reference
+              <input id="evidence" type="text" placeholder="p. 42 or short evidence note" />
+            </label>
+          </div>
+
+          <label>What did you notice?
+            <textarea id="notice" maxlength="350" placeholder="One or two sentences max." required></textarea>
+          </label>
+
+          <div class="tag-section">
+            <h3>Themes <span class="small-note">(tap/select; hover or focus for definitions)</span></h3>
+            <div id="themeTags" class="tag-grid"></div>
+          </div>
+
+          <div class="tag-section">
+            <h3>Historical Thinking Lenses <span class="small-note">(optional; tap/select; hover or focus for definitions)</span></h3>
+            <div id="lensTags" class="tag-grid"></div>
+          </div>
+
+          <div class="advanced-toggle">
+            <button type="button" id="toggleAdvancedBtn" class="secondary-btn">+ Take this observation further</button>
+          </div>
+
+          <div id="advancedPanel" class="advanced-panel hidden">
+            <h3>Interpretation Status</h3>
+            <p class="small-note"><strong>What best describes your thinking right now?</strong> Your ideas can change as you gather new evidence, participate in discussions, and make new connections. Historians often revise their interpretations over time.</p>
+            <div class="status-options">
+              <label class="status-card"><input type="radio" name="status" value="Initial Observation" /> <span><strong>🌱 Initial Observation</strong><em>“I noticed something important, but I haven’t thought deeply about what it means yet.”</em></span></label>
+              <label class="status-card"><input type="radio" name="status" value="Emerging Interpretation" /> <span><strong>🔍 Emerging Interpretation</strong><em>“I’m starting to notice a pattern, connection, or possible meaning.”</em></span></label>
+              <label class="status-card"><input type="radio" name="status" value="Evidence-Based Claim" /> <span><strong>📖 Evidence-Based Claim</strong><em>“I can support this interpretation with multiple examples or evidence from the text.”</em></span></label>
+              <label class="status-card"><input type="radio" name="status" value="Revising My Thinking" /> <span><strong>🔄 Revising My Thinking</strong><em>“New evidence has changed, complicated, or strengthened my original interpretation.”</em></span></label>
+            </div>
+            <div id="revisionBox" class="revision-reasons hidden">
+              <h3>What changed your thinking?</h3>
+              <div id="revisionTags" class="tag-grid"></div>
+            </div>
+            <label>Optional reflection / revision thought
+              <textarea id="reflection" maxlength="350" placeholder="How does this complicate, strengthen, or change your thinking?"></textarea>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Save Observation</button>
+            <button type="button" id="nudgeBtn" class="secondary-btn">Need Another Angle?</button>
+          </div>
+        </form>
+        <div id="nudgeBox" class="nudge-box hidden"></div>
+      </div>
+    </section>
+
+    <section id="graph" class="view">
+      <div class="card">
+        <h2>Knowledge Graph</h2>
+        <p class="helper">Connections are created from your observations: people ↔ themes ↔ historical thinking lenses.</p>
+        <div id="graphCanvas" class="graph-canvas"></div>
+      </div>
+    </section>
+
+    <section id="discussion" class="view">
+      <div class="card printable-section">
+        <h2>Discussion Preparation</h2>
+        <p class="helper">Use this before small-group or whole-class discussion.</p>
+        <div id="discussionOutput" class="output-grid"></div>
+      </div>
+    </section>
+
+    <section id="growth" class="view">
+      <div class="card printable-section">
+        <h2>Thinking Growth Timeline</h2>
+        <p class="helper">Look for growth in specificity, nuance, evidence, and transfer.</p>
+        <div id="growthOutput" class="timeline"></div>
+      </div>
+    </section>
+
+    <section id="portfolio" class="view">
+      <div class="card printable-section">
+        <h2>Historical Thinking Portfolio</h2>
+        <p class="helper">This is the full local portfolio. Use Print / Save PDF to submit through Canvas.</p>
+        <div id="portfolioOutput"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">History Lens is local-first. Export backups regularly.</footer>
+  <script>
+const STORAGE_KEY = 'historyLensFoundingMothersPortfolioV1';
+
+const people = [
+  'Abigail Adams','John Adams','Mercy Otis Warren','James Warren','Martha Washington','George Washington',
+  'Phillis Wheatley','Eliza Pinckney','Charles Pinckney','Deborah Read Franklin','Benjamin Franklin',
+  'Sarah Franklin Bache','Esther DeBerdt Reed','Joseph Reed','Sarah Livingston Jay','John Jay',
+  'Catharine Macaulay','Thomas Jefferson','Samuel Adams','James Madison','Alexander Hamilton',
+  'Henry Knox','Nathanael Greene','Catherine Greene','Joseph Warren','Richard Henry Lee','Other'
+];
+const themes = {
+  'Women\'s Agency':'How women make choices, take action, and influence events, even when they do not have official power.',
+  'Informal Political Power':'Influence that happens outside elected office, such as through letters, relationships, households, social networks, or reputation.',
+  'Family':'How marriage, parenting, loyalty, household responsibilities, and family relationships shape historical events.',
+  'Patriotism':'How people show commitment to a cause, country, or community—and how that commitment can look different for different people.',
+  'Education':'How reading, writing, learning, and access to knowledge shape a person’s opportunities and influence.',
+  'Historical Memory':'How people, events, and stories are remembered, forgotten, celebrated, simplified, or left out over time.',
+  'Class':'How wealth, social status, occupation, or family position shape people’s choices and experiences.',
+  'Race':'How race and racism shape freedom, opportunity, power, and whose stories are included in history.',
+  'Perspective':'How a person’s background, role, identity, or experiences shape the way they understand events.',
+  'Revolution':'Major change in government, society, ideas, or daily life—not just battles or formal politics.',
+  'Leadership':'How people guide, influence, organize, persuade, or support others in visible or quiet ways.',
+  'Identity':'How people understand who they are and where they belong in relation to family, society, country, gender, race, class, or belief.',
+  'Sacrifice':'What people give up, risk, or endure because of war, family duty, political beliefs, or survival.',
+  'Voice / Silence':'Who gets to speak, write, publish, or be remembered—and who is ignored, limited, or left out.'
+};
+const lenses = {
+  'Perspective':'Whose point of view is being shown, and how that point of view shapes the story.',
+  'Historical Significance':'Why this person, event, or idea matters beyond simply appearing in the book.',
+  'Historiography':'How history is written, whose stories are included, and how historians decide what matters.',
+  'Historical Memory':'How the past gets remembered, simplified, forgotten, celebrated, or retold over time.',
+  'Continuity and Change':'What stays the same over time and what changes.',
+  'Cause and Effect':'How one event, choice, belief, or condition helps lead to another.',
+  'Agency':'The ability people have to make choices and shape events, even within limits.',
+  'Power':'Who has influence, who lacks it, and how power operates formally or informally.',
+  'Interpretation':'The meaning someone makes from evidence. Interpretations can change when new evidence appears.',
+  'Evidence':'The specific details, examples, or text references used to support an interpretation.',
+  'Empathy':'Trying to understand people in their historical context without assuming they saw the world exactly as we do.'
+};
+const revisionReasons = ['New evidence from the text','Class discussion','Small-group discussion','Another historical figure’s experience','A recurring theme I noticed','Something else'];
+const nudges = [
+  'Whose voice is missing from this moment?',
+  'What evidence would make this interpretation stronger?',
+  'How might another person in the book see this differently?',
+  'Does this challenge or reinforce a traditional founding-era narrative?',
+  'What kind of power is being shown here: formal, informal, social, economic, intellectual, or emotional?',
+  'How could this idea transfer to a later U.S. History unit?',
+  'What assumption might you be making about this person or event?',
+  'How has your thinking changed from an earlier reading?'
+];
+
+let portfolio = loadPortfolio();
+
+function loadPortfolio() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { observations: [], createdAt: new Date().toISOString() }; }
+  catch { return { observations: [], createdAt: new Date().toISOString() }; }
+}
+function savePortfolio() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(portfolio));
+  renderAll();
+}
+function selectedTags(containerId) {
+  return [...document.querySelectorAll(`#${containerId} .selected`)].map(btn => btn.dataset.value);
+}
+function countUnique(field) {
+  return new Set(portfolio.observations.flatMap(o => Array.isArray(o[field]) ? o[field] : [o[field]]).filter(Boolean)).size;
+}
+function topItems(items, limit = 5) {
+  const counts = {};
+  items.filter(Boolean).forEach(i => counts[i] = (counts[i] || 0) + 1);
+  return Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, limit);
+}
+function escapeHtml(str) {
+  return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function initTags() {
+  document.getElementById('peopleList').innerHTML = people.map(p => `<option value="${escapeHtml(p)}">`).join('');
+  makeTagButtons('themeTags', themes);
+  makeTagButtons('lensTags', lenses);
+  makeTagButtons('revisionTags', revisionReasons);
+}
+function makeTagButtons(id, items) {
+  const el = document.getElementById(id);
+  const entries = Array.isArray(items) ? items.map(item => [item, '']) : Object.entries(items);
+  el.innerHTML = entries.map(([item, definition]) => `<button type="button" class="tag-pill" data-value="${escapeHtml(item)}" data-definition="${escapeHtml(definition)}">${escapeHtml(item)}</button>`).join('');
+  el.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => btn.classList.toggle('selected')));
+}
+function setupTabs() {
+  document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => showView(tab.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.goto)));
+}
+function showView(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active-view', v.id === id));
+  renderAll();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function setupForm() {
+  document.getElementById('toggleAdvancedBtn').addEventListener('click', () => {
+    const panel = document.getElementById('advancedPanel');
+    panel.classList.toggle('hidden');
+    document.getElementById('toggleAdvancedBtn').textContent = panel.classList.contains('hidden') ? '+ Take this observation further' : '− Hide deeper thinking options';
+  });
+  document.querySelectorAll('input[name="status"]').forEach(radio => radio.addEventListener('change', () => {
+    document.getElementById('revisionBox').classList.toggle('hidden', radio.value !== 'Revising My Thinking' || !radio.checked);
+  }));
+  document.getElementById('observationForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const obs = {
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      createdAt: new Date().toISOString(),
+      readingSection: document.getElementById('readingSection').value.trim(),
+      person: document.getElementById('person').value.trim(),
+      evidence: document.getElementById('evidence').value.trim(),
+      notice: document.getElementById('notice').value.trim(),
+      themes: selectedTags('themeTags'),
+      lenses: selectedTags('lensTags'),
+      status: document.querySelector('input[name="status"]:checked')?.value || 'Initial Observation',
+      revisionReasons: selectedTags('revisionTags'),
+      reflection: document.getElementById('reflection').value.trim()
+    };
+    portfolio.observations.push(obs);
+    e.target.reset();
+    document.querySelectorAll('.tag-pill.selected').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('input[name="status"]').forEach(r => r.checked = false);
+    document.getElementById('advancedPanel').classList.add('hidden');
+    document.getElementById('revisionBox').classList.add('hidden');
+    document.getElementById('toggleAdvancedBtn').textContent = '+ Take this observation further';
+    document.getElementById('nudgeBox').classList.add('hidden');
+    savePortfolio();
+    showView('discussion');
+  });
+  document.getElementById('nudgeBtn').addEventListener('click', () => {
+    const box = document.getElementById('nudgeBox');
+    box.textContent = nudges[Math.floor(Math.random() * nudges.length)];
+    box.classList.remove('hidden');
+  });
+}
+function renderStats() {
+  document.getElementById('statObservations').textContent = portfolio.observations.length;
+  document.getElementById('statPeople').textContent = countUnique('person');
+  document.getElementById('statThemes').textContent = countUnique('themes');
+  document.getElementById('statLenses').textContent = countUnique('lenses');
+}
+function renderDiscussion() {
+  const obs = portfolio.observations;
+  const peopleTop = topItems(obs.map(o => o.person));
+  const themesTop = topItems(obs.flatMap(o => o.themes));
+  const lensesTop = topItems(obs.flatMap(o => o.lenses));
+  const strongest = obs.filter(o => o.status === 'Evidence-Based Claim' || o.status === 'Revising My Thinking').slice(-3).reverse();
+  const recent = obs.slice(-3).reverse();
+  document.getElementById('discussionOutput').innerHTML = [
+    outputCard('People I can discuss', chips(peopleTop)),
+    outputCard('Themes I noticed most', chips(themesTop)),
+    outputCard('Historical thinking lenses', chips(lensesTop)),
+    outputCard('My strongest evidence', cards(strongest.length ? strongest : recent)),
+    outputCard('Questions I can bring', `<ul><li>How does perspective shape this part of the narrative?</li><li>Who has influence without formal power?</li><li>What does this reading suggest about how history is remembered?</li></ul>`),
+    outputCard('Possible contribution starter', `<p>One pattern I noticed is <strong>${themesTop[0]?.[0] || '________'}</strong>, especially through <strong>${peopleTop[0]?.[0] || '________'}</strong>. This matters because...</p>`)
+  ].join('');
+}
+function outputCard(title, html) { return `<article class="output-card"><h3>${title}</h3>${html || '<p class="meta">Add observations to build this section.</p>'}</article>`; }
+function chips(pairs) { return pairs.length ? `<div class="chip-list">${pairs.map(([name,count]) => `<span class="chip">${name} (${count})</span>`).join('')}</div>` : ''; }
+function cards(obs) { return obs.length ? obs.map(o => `<div class="observation-card"><strong>${escapeHtml(o.person)}</strong>${o.status ? ` <span class="chip">${escapeHtml(o.status)}</span>` : ''}<p>${escapeHtml(o.notice)}</p><p class="meta">${escapeHtml(o.readingSection || '')}${o.evidence ? ' • ' + escapeHtml(o.evidence) : ''}</p>${o.reflection ? `<p class="meta">Reflection: ${escapeHtml(o.reflection)}</p>` : ''}</div>`).join('') : ''; }
+function renderGrowth() {
+  const groups = {};
+  portfolio.observations.forEach(o => { (groups[o.readingSection] ||= []).push(o); });
+  const html = Object.entries(groups).map(([section, items], idx) => `
+    <div class="timeline-item">
+      <h3>${section || 'Unlabeled reading'} ${idx === 0 ? '<span class="meta">Early thinking</span>' : ''}</h3>
+      ${items.slice(-3).map(o => `<p><strong>${escapeHtml(o.person)}:</strong> ${escapeHtml(o.notice)}</p><p class="meta">${escapeHtml(o.status || 'Initial Observation')}${o.revisionReasons && o.revisionReasons.length ? ' • Changed by: ' + o.revisionReasons.map(escapeHtml).join(', ') : ''}</p>${o.reflection ? `<p class="meta">Reflection: ${escapeHtml(o.reflection)}</p>` : ''}`).join('')}
+    </div>`).join('');
+  document.getElementById('growthOutput').innerHTML = html || '<p class="meta">Add observations across reading sections to see your thinking evolve.</p>';
+}
+function renderPortfolio() {
+  const obs = [...portfolio.observations].reverse();
+  document.getElementById('portfolioOutput').innerHTML = `
+    <h3>Portfolio Summary</h3>
+    <p><strong>${portfolio.observations.length}</strong> observations • <strong>${countUnique('person')}</strong> people • <strong>${countUnique('themes')}</strong> themes</p>
+    <p>${chips(topItems(portfolio.observations.map(o => o.status || 'Initial Observation'), 4))}</p>
+    <h3>Final Reflection Prompts</h3>
+    <ul>
+      <li>How has your understanding of history changed?</li>
+      <li>Which figure most changed your thinking?</li>
+      <li>How did your interpretation change when you encountered new evidence?</li>
+      <li>How might these ideas apply to later U.S. History units?</li>
+    </ul>
+    <h3>All Observations</h3>
+    ${cards(obs)}
+  `;
+}
+function renderGraph() {
+  const el = document.getElementById('graphCanvas');
+  const peopleTop = topItems(portfolio.observations.map(o => o.person), 8).map(x => ({ type:'person', label:x[0], count:x[1] }));
+  const themesTop = topItems(portfolio.observations.flatMap(o => o.themes), 10).map(x => ({ type:'theme', label:x[0], count:x[1] }));
+  const lensesTop = topItems(portfolio.observations.flatMap(o => o.lenses), 8).map(x => ({ type:'lens', label:x[0], count:x[1] }));
+  const nodes = [...peopleTop, ...themesTop, ...lensesTop];
+  if (!nodes.length) { el.innerHTML = '<p class="meta" style="padding:1rem">Add observations to build the graph.</p>'; return; }
+  el.innerHTML = nodes.map((n, i) => {
+    const angle = (i / nodes.length) * Math.PI * 2;
+    const radius = n.type === 'theme' ? 180 : 115;
+    const x = 50 + Math.cos(angle) * radius / 4.8;
+    const y = 48 + Math.sin(angle) * radius / 5.2;
+    return `<div class="node ${n.type}" style="left:${Math.max(2, Math.min(78, x))}%; top:${Math.max(4, Math.min(88, y))}%">${n.label} <span class="meta">${n.count}</span></div>`;
+  }).join('');
+}
+function renderAll() { renderStats(); renderDiscussion(); renderGrowth(); renderPortfolio(); renderGraph(); }
+function setupExports() {
+  document.getElementById('exportPdfBtn').addEventListener('click', () => window.print());
+  document.getElementById('exportJsonBtn').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(portfolio, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `History_Lens_Backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('importJsonInput').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported = JSON.parse(reader.result);
+        if (!Array.isArray(imported.observations)) throw new Error('Invalid backup');
+        portfolio = imported;
+        savePortfolio();
+        alert('Portfolio imported successfully.');
+      } catch { alert('That file does not look like a valid History Lens backup.'); }
+    };
+    reader.readAsText(file);
+  });
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    if (confirm('Clear this local portfolio? Export a backup first if you need it.')) {
+      portfolio = { observations: [], createdAt: new Date().toISOString() };
+      savePortfolio();
+    }
+  });
+}
+initTags();
+setupTabs();
+setupForm();
+setupExports();
+renderAll();
+
+</script>
+</body>
+</html>
